@@ -23,14 +23,24 @@ def post_form():
         phone=c['phone'],
         telephone=c['telephone']
     )
-    session = db.getSession(engine)
-    session.add(form)
-    session.commit()
-    return 'Created Form'
+    if(len(form.name) > 0 and len(form.fullname) > 0 and len(form.phone) == 9 and len(form.telephone) == 7):
+        session = db.getSession(engine)
+        session.add(form)
+        session.commit()
+        return 'Created Form'
+    else:
+        return 'Error Form'
 
 @app.route('/form/<id>', methods = ['GET'])
 def get_template(id):
-    return 0
+    db_session = db.getSession(engine)
+    forms = db_session.query(entities.Form).filter(entities.Form.id == id)
+    for form in forms:
+        js = json.dumps(form, cls=connector.AlchemyEncoder)
+        return Response(js, status=200, mimetype='application/json')
+
+    message = {'status': 404, 'message': 'Not Found'}
+    return Response(message, status=404, mimetype='application/json')
 
 if __name__ == '__main__':
     app.secret_key = ".."
